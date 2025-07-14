@@ -1,0 +1,11 @@
+url,label,num_dots,num_hyphens,has_ip,url_length,num_at,uses_https
+http://login.secure-verification.ru,phishing,2,1,0,35,0,0
+https://facebook.com/profile/123,benign,1,0,0,32,0,1
+http://free-gift-card-survey.com,phishing,1,3,0,32,0,0
+https://linkedin.com/jobs,benign,1,0,0,25,0,1
+http://update-your-bank-password.ru,phishing,1,3,0,35,0,0
+https://stackoverflow.com/questions,benign,1,0,0,35,0,1
+http://verify-appleid.com,phishing,1,1,0,25,0,0
+https://youtube.com/watch?v=xyz,benign,1,0,0,31,0,1
+http://secure.paypal-login.security-check.com,phishing,3,2,0,45,0,0
+https://github.com/login,benign,1,0,0,24,0,1

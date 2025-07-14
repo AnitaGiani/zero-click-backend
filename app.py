@@ -1,10 +1,15 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import re
 import os
 import csv
 from datetime import datetime
-from flask import render_template
+import joblib
+
+# Load trained model and vectorizer
+model = joblib.load("url_model.pkl")
+vectorizer = joblib.load("vectorizer.pkl")
+
 
 app = Flask(__name__)
 CORS(app)
@@ -35,13 +40,21 @@ def check_url_threat(url):
         return "Suspicious"
 
     return "Safe"
+def predict_with_model(url):
+    vector = vectorizer.transform([url])
+    prediction = model.predict(vector)[0]
+    return "Malicious" if prediction == 1 else "Safe"
+
+
 def log_url_check(url, result):
     log_file = "scan_log.csv"
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S") 
     
     with open(log_file, mode='a', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
-        writer.writerow([timestamp, url, result])
+        writer.writerow([timestamp, url, result["rule_based"], result["ml_based"]])
+
+
 
 
 @app.route('/check_url', methods=['POST'])
@@ -50,12 +63,25 @@ def check_url():
     url = data.get('url')
     print("Received URL:", url)
 
-    result = check_url_threat(url)
+        # Rule-based result
+    rule_based_result = check_url_threat(url)
+
+    # ML-based result
+    ml_result = predict_with_model(url)
+
+    # Combine results (for now, we show both)
+    result = {
+        "rule_based": rule_based_result,
+        "ml_based": ml_result
+    }
+
 
     # Log to CSV
-    log_url_check(url, result)
+    log_url_check(url, rule_based_result)
 
-    return jsonify({"status": result})
+
+    return jsonify(result)
+
 
 @app.route('/scan_logs', methods=['GET'])
 def get_scan_logs():
@@ -67,9 +93,9 @@ def get_scan_logs():
         with open("scan_log.csv", "r") as f:
             reader = csv.reader(f)
             for row in reader:
-                if len(row) != 3:
+                if len(row) < 4:
                     continue  # skip malformed rows
-                timestamp, url, result = row
+                timestamp, url, rule_based, ml_based = row[:4]
                 log_date = timestamp.split(" ")[0]
 
                 if from_date and log_date < from_date:
@@ -77,7 +103,13 @@ def get_scan_logs():
                 if to_date and log_date > to_date:
                     continue
 
-                logs.append({"timestamp": timestamp, "url": url, "result": result})
+                logs.append({
+                    "timestamp": timestamp,
+                    "url": url,
+                    "rule_based": rule_based,
+                    "ml_based": ml_based
+                })
+
     except FileNotFoundError:
         return jsonify({"logs": []})
 
