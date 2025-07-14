@@ -62,33 +62,27 @@ def log_url_check(url, result):
 
 
 
-@app.route('/check_url', methods=['POST'])
-@app.route('/check_url', methods=['POST'])
+
+@app.route('/check_url', methods=['GET', 'POST'])
 def check_url():
-    try:
-        data = request.get_json()
-        url = data.get('url')
-        print("Received URL:", url)
+    if request.method == 'GET':
+        return jsonify({"error": "Please use POST with JSON body containing 'url'."}), 405
 
-        # Rule-based result
-        rule_based_result = check_url_threat(url)
+    data = request.get_json()
+    url = data.get('url')
 
-        # ML-based result
-        ml_result = predict_with_model(url)
+    rule_based_result = check_url_threat(url)
+    ml_result = predict_with_model(url)
 
-        # Combine both results
-        result = {
-            "rule_based": rule_based_result,
-            "ml_based": ml_result
-        }
+    result = {
+        "rule_based": rule_based_result,
+        "ml_based": ml_result
+    }
 
-        log_url_check(url, result)
+    log_url_check(url, result)
 
-        return jsonify(result)
+    return jsonify(result)
 
-    except Exception as e:
-        print("Error:", e)
-        return jsonify({"error": str(e)}), 500
 
 
 
