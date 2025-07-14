@@ -2,6 +2,9 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import re
 import os
+import csv
+from datetime import datetime
+
 
 app = Flask(__name__)
 CORS(app)
@@ -32,6 +35,14 @@ def check_url_threat(url):
         return "Suspicious"
 
     return "Safe"
+def log_url_check(url, result):
+    log_file = "scan_log.csv"
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
+    with open(log_file, mode='a', newline='', encoding='utf-8') as file:
+        writer = csv.writer(file)
+        writer.writerow([timestamp, url, result])
+
 
 @app.route('/check_url', methods=['POST'])
 def check_url():
@@ -41,7 +52,11 @@ def check_url():
 
     result = check_url_threat(url)
 
+    # Log to CSV
+    log_url_check(url, result)
+
     return jsonify({"status": result})
+
 @app.route("/")
 def home():
     return {"message": "Zero Click Detector API is live"}
