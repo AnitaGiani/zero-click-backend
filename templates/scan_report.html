@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Scan History</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 20px;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ccc;
+      text-align: left;
+    }
+    th {
+      background-color: #f4f4f4;
+    }
+  </style>
+</head>
+<body>
+  <h1>Scan History</h1>
+  <table id="logTable">
+    <thead>
+      <tr>
+        <th>Timestamp</th>
+        <th>URL</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    async function loadLogs() {
+      const res = await fetch("/scan_logs");
+      const data = await res.json();
+
+      const tableBody = document.querySelector("#logTable tbody");
+      tableBody.innerHTML = "";
+
+      data.logs.forEach(log => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${log.timestamp}</td>
+          <td>${log.url}</td>
+          <td>${log.result}</td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    loadLogs();
+  </script>
+</body>
+</html>

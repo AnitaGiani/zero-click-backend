@@ -4,7 +4,7 @@ import re
 import os
 import csv
 from datetime import datetime
-
+from flask import render_template
 
 app = Flask(__name__)
 CORS(app)
@@ -37,7 +37,7 @@ def check_url_threat(url):
     return "Safe"
 def log_url_check(url, result):
     log_file = "scan_log.csv"
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S") 
     
     with open(log_file, mode='a', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
@@ -56,6 +56,36 @@ def check_url():
     log_url_check(url, result)
 
     return jsonify({"status": result})
+
+@app.route('/scan_logs', methods=['GET'])
+def get_scan_logs():
+    from_date = request.args.get('from')  # e.g. 2025-07-13
+    to_date = request.args.get('to')      # e.g. 2025-07-14
+
+    logs = []
+    try:
+        with open("scan_log.csv", "r") as f:
+            reader = csv.reader(f)
+            for row in reader:
+                if len(row) != 3:
+                    continue  # skip malformed rows
+                timestamp, url, result = row
+                log_date = timestamp.split(" ")[0]
+
+                if from_date and log_date < from_date:
+                    continue
+                if to_date and log_date > to_date:
+                    continue
+
+                logs.append({"timestamp": timestamp, "url": url, "result": result})
+    except FileNotFoundError:
+        return jsonify({"logs": []})
+
+    return jsonify({"logs": logs})
+
+@app.route('/report')
+def scan_report():
+    return render_template("scan_report.html")
 
 @app.route("/")
 def home():
