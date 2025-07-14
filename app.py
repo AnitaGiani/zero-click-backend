@@ -42,6 +42,10 @@ def check_url():
     result = check_url_threat(url)
 
     return jsonify({"status": result})
+@app.route("/")
+def home():
+    return {"message": "Zero Click Detector API is live"}
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
