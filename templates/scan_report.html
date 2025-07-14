@@ -24,6 +24,13 @@
 </head>
 <body>
   <h1>Scan History</h1>
+
+  <label for="startDate">Start Date:</label>
+  <input type="date" id="startDate">
+  <label for="endDate">End Date:</label>
+  <input type="date" id="endDate">
+  <button onclick="filterLogs()">Apply Filter</button>
+
   <table id="logTable">
     <thead>
       <tr>
@@ -36,14 +43,20 @@
   </table>
 
   <script>
+    let fullLogs = [];
+
     async function loadLogs() {
       const res = await fetch("/scan_logs");
       const data = await res.json();
+      fullLogs = data.logs;
+      displayLogs(fullLogs);
+    }
 
+    function displayLogs(logs) {
       const tableBody = document.querySelector("#logTable tbody");
       tableBody.innerHTML = "";
 
-      data.logs.forEach(log => {
+      logs.forEach(log => {
         const row = document.createElement("tr");
         row.innerHTML = `
           <td>${log.timestamp}</td>
@@ -54,7 +67,21 @@
       });
     }
 
+    function filterLogs() {
+      const start = document.getElementById("startDate").value;
+      const end = document.getElementById("endDate").value;
+
+      const filtered = fullLogs.filter(log => {
+        const logDate = new Date(log.timestamp);
+        return (!start || logDate >= new Date(start)) &&
+               (!end || logDate <= new Date(end));
+      });
+
+      displayLogs(filtered);
+    }
+
     loadLogs();
   </script>
 </body>
+
 </html>
