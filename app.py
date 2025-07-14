@@ -40,47 +40,56 @@ def check_url_threat(url):
         return "Suspicious"
 
     return "Safe"
+
 def predict_with_model(url):
-    vector = vectorizer.transform([url])
-    prediction = model.predict(vector)[0]
+    X = vectorizer.transform([url])
+    prediction = model.predict(X)[0]
     return "Malicious" if prediction == 1 else "Safe"
 
 
 def log_url_check(url, result):
     log_file = "scan_log.csv"
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S") 
-    
+
+    if isinstance(result, dict):
+        result = f"Rule: {result.get('rule_based')}, ML: {result.get('ml_based')}"
+
     with open(log_file, mode='a', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
-        writer.writerow([timestamp, url, result["rule_based"], result["ml_based"]])
+        writer.writerow([timestamp, url, result])
+
 
 
 
 
 @app.route('/check_url', methods=['POST'])
+@app.route('/check_url', methods=['POST'])
 def check_url():
-    data = request.get_json()
-    url = data.get('url')
-    print("Received URL:", url)
+    try:
+        data = request.get_json()
+        url = data.get('url')
+        print("Received URL:", url)
 
         # Rule-based result
-    rule_based_result = check_url_threat(url)
+        rule_based_result = check_url_threat(url)
 
-    # ML-based result
-    ml_result = predict_with_model(url)
+        # ML-based result
+        ml_result = predict_with_model(url)
 
-    # Combine results (for now, we show both)
-    result = {
-        "rule_based": rule_based_result,
-        "ml_based": ml_result
-    }
+        # Combine both results
+        result = {
+            "rule_based": rule_based_result,
+            "ml_based": ml_result
+        }
 
+        log_url_check(url, result)
 
-    # Log to CSV
-    log_url_check(url, rule_based_result)
+        return jsonify(result)
 
+    except Exception as e:
+        print("Error:", e)
+        return jsonify({"error": str(e)}), 500
 
-    return jsonify(result)
 
 
 @app.route('/scan_logs', methods=['GET'])
