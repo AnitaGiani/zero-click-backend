@@ -1,0 +1,11 @@
+url,label
+http://login.secure-verification.ru,phishing
+https://facebook.com/profile/123,benign
+http://free-gift-card-survey.com,phishing
+https://linkedin.com/jobs,benign
+http://update-your-bank-password.ru,phishing
+https://stackoverflow.com/questions,benign
+http://verify-appleid.com,phishing
+https://youtube.com/watch?v=xyz,benign
+http://secure.paypal-login.security-check.com,phishing
+https://github.com/login,benign
