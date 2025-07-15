@@ -49,15 +49,18 @@ def predict_with_model(url):
 
 def log_url_check(url, result):
     log_file = "scan_log.csv"
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S") 
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    # Unpack values safely
-    rule_based = result.get("rule_based", "Unknown")
-    ml_based = result.get("ml_based", "Unknown")
+    if isinstance(result, dict):
+        rule = result.get("rule_based", "")
+        ml = result.get("ml_based", "")
+    else:
+        rule = ml = result  # fallback if single string
 
     with open(log_file, mode='a', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
-        writer.writerow([timestamp, url, rule_based, ml_based])
+        writer.writerow([timestamp, url, rule, ml])
+
 
 
 
