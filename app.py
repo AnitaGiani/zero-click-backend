@@ -120,7 +120,18 @@ def get_scan_logs():
 
 @app.route('/report')
 def scan_report():
-    return render_template("scan_report.html")
+    logs = []
+    try:
+        with open("scan_log.csv", "r") as f:
+            reader = csv.reader(f)
+            for row in reader:
+                if len(row) == 3:
+                    logs.append({"timestamp": row[0], "url": row[1], "result": row[2]})
+    except FileNotFoundError:
+        logs = []
+
+    return render_template("scan_report.html", logs=logs)
+
 
 @app.route("/")
 def home():
