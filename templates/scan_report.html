@@ -92,8 +92,10 @@
       <tr>
         <th>Timestamp</th>
         <th>URL</th>
-        <th>Status</th>
+        <th>Rule-based</th>
+        <th>ML-based</th>
       </tr>
+
     </thead>
     <tbody></tbody>
   </table>
@@ -116,15 +118,20 @@
 
       logs.forEach(log => {
         const row = document.createElement("tr");
-        row.classList.add(log.result);  // Add class for coloring
+        
+        // Add styling based on ML result
+        row.classList.add(log.ml_based); 
+
         row.innerHTML = `
           <td>${log.timestamp}</td>
           <td>${log.url}</td>
-          <td>${log.result}</td>
+          <td>${log.rule_based}</td>
+          <td>${log.ml_based}</td>
         `;
         tableBody.appendChild(row);
       });
     }
+
 
     function filterLogs() {
       const start = document.getElementById("startDate").value;
@@ -143,3 +150,4 @@
   </script>
 </body>
 </html>
+

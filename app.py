@@ -51,12 +51,14 @@ def log_url_check(url, result):
     log_file = "scan_log.csv"
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S") 
 
-    if isinstance(result, dict):
-        result = f"Rule: {result.get('rule_based')}, ML: {result.get('ml_based')}"
+    # Unpack values safely
+    rule_based = result.get("rule_based", "Unknown")
+    ml_based = result.get("ml_based", "Unknown")
 
     with open(log_file, mode='a', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
-        writer.writerow([timestamp, url, result])
+        writer.writerow([timestamp, url, rule_based, ml_based])
+
 
 
 
@@ -80,6 +82,7 @@ def check_url():
     }
 
     log_url_check(url, result)
+    print("Logging result:", result)
 
     return jsonify(result)
 
@@ -88,17 +91,17 @@ def check_url():
 
 @app.route('/scan_logs', methods=['GET'])
 def get_scan_logs():
-    from_date = request.args.get('from')  # e.g. 2025-07-13
-    to_date = request.args.get('to')      # e.g. 2025-07-14
+    from_date = request.args.get('from')
+    to_date = request.args.get('to')
 
     logs = []
     try:
         with open("scan_log.csv", "r") as f:
             reader = csv.reader(f)
             for row in reader:
-                if len(row) < 4:
-                    continue  # skip malformed rows
-                timestamp, url, rule_based, ml_based = row[:4]
+                if len(row) != 4:
+                    continue
+                timestamp, url, rule_based, ml_based = row
                 log_date = timestamp.split(" ")[0]
 
                 if from_date and log_date < from_date:
@@ -112,11 +115,11 @@ def get_scan_logs():
                     "rule_based": rule_based,
                     "ml_based": ml_based
                 })
-
     except FileNotFoundError:
         return jsonify({"logs": []})
 
     return jsonify({"logs": logs})
+
 
 @app.route('/report')
 def scan_report():
